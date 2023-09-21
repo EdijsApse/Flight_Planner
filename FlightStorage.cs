@@ -25,5 +25,17 @@ namespace Flight_Planner
                 return existingFlight.From.Equals(flight.From) && existingFlight.To.Equals(flight.To) && existingFlight.DepartureTime.Equals(flight.DepartureTime);
             });
         }
+
+        public Flight GetFlight(int flightId)
+        {
+            return _listOfFlights.FirstOrDefault(flight => flight.Id == flightId);
+        }
+
+        public void DeleteFlight(int flightId)
+        {
+            var flight = GetFlight(flightId);
+
+            _listOfFlights.Remove(flight);
+        }
     }
 }

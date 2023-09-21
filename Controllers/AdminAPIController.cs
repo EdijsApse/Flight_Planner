@@ -21,7 +21,11 @@ namespace Flight_Planner.Controllers
         [Route("flights/{id}")]
         public IActionResult GetFlight(int id)
         {
-            return NotFound();
+            var flight = _flightStorage.GetFlight(id);
+
+            if (flight == null) return NotFound();
+
+            return Ok(flight);
         }
 
         [HttpPut]
@@ -37,6 +41,15 @@ namespace Flight_Planner.Controllers
             _flightStorage.AddFlight(flight);
 
             return Created("", flight);
+        }
+
+        [HttpDelete]
+        [Route("flights/{id}")]
+        public IActionResult DeleteFlight(int id)
+        {
+            _flightStorage.DeleteFlight(id);
+
+            return Ok();
         }
     }
 }
