@@ -37,5 +37,26 @@ namespace Flight_Planner
 
             _listOfFlights.Remove(flight);
         }
+
+        public List<Airport> SearchAirports(string keyword)
+        {
+            var listOfAirports = _listOfFlights.Aggregate(new List<Airport>(), (currentList, flight) => {
+
+                if (AirportMatchesSearchKeyword(flight.From, keyword) && !currentList.Any(airport => airport.Equals(flight.From))) currentList.Add(flight.From);
+
+                if (AirportMatchesSearchKeyword(flight.To, keyword) && !currentList.Any(airport => airport.Equals(flight.To))) currentList.Add(flight.To);
+
+                return currentList;
+            });
+
+            return listOfAirports;
+        }
+
+        private bool AirportMatchesSearchKeyword(Airport airport, string keyword)
+        {
+            var santizedkeyword = keyword.ToLower().Trim();
+
+            return airport.Code.ToLower().Contains(santizedkeyword) || airport.Country.ToLower().Contains(santizedkeyword) || airport.City.ToLower().Contains(santizedkeyword);
+        }
     }
 }
