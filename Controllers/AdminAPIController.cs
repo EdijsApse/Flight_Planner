@@ -1,6 +1,5 @@
 ﻿using Flight_Planner.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flight_Planner.Controllers

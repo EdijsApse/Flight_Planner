@@ -49,7 +49,7 @@ namespace Flight_Planner
             {
                 var itemIndex = (desiredPage * _itemsPerPage) + i;
 
-                if (_items[itemIndex] != null)
+                if (itemIndex < _items.Count)
                 {
                     page.AddFlight(_items[itemIndex]);
                 }

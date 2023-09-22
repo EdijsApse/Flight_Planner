@@ -5,6 +5,7 @@ namespace Flight_Planner
     public class FlightStorage
     {
         private static List<Flight> _listOfFlights = new List<Flight>();
+
         private static int _flightId = 0;
 
         public void AddFlight(Flight flight)
@@ -54,9 +55,19 @@ namespace Flight_Planner
 
         public FlightPage GetFlights(FlightTicket ticket)
         {
+            DateTime ticketDepartureTime;
+            DateTime.TryParse(ticket.DepartureDate ,out ticketDepartureTime);
+
             var filteredFlights = _listOfFlights.Where(flight =>
             {
-                return flight.From.Code.Equals(ticket.From) && flight.To.Code.Equals(ticket.To) && flight.DepartureTime.Equals(ticket.DepartureDate);
+                var flightDateTime = DateTime.Parse(flight.DepartureTime);
+
+                var departureDatesMatch =
+                    ticketDepartureTime.Day == flightDateTime.Day &&
+                    ticketDepartureTime.Month == flightDateTime.Month &&
+                    ticketDepartureTime.Year == flightDateTime.Year;
+
+                return flight.From.Code.Equals(ticket.From) && flight.To.Code.Equals(ticket.To) && departureDatesMatch;
             }).ToList();
 
             var flightPagination = new FlightPagination(filteredFlights);
