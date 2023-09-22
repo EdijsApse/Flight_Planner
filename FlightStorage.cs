@@ -8,71 +8,92 @@ namespace Flight_Planner
 
         private static int _flightId = 0;
 
+        private static readonly object _balanceLock = new object();
+
         public void AddFlight(Flight flight)
         {
-            flight.Id = _flightId++;
-            _listOfFlights.Add(flight);
+            lock(_balanceLock) {
+                flight.Id = _flightId++;
+                _listOfFlights.Add(flight);
+            }
         }
 
         public void ClearFlights()
         {
-            _listOfFlights.Clear();
+            lock (_balanceLock)
+            {
+                _listOfFlights.Clear();
+            }
         }
 
         public bool FlightExists(Flight flight)
         {
-            return _listOfFlights.Any(existingFlight =>
+            lock (_balanceLock)
             {
-                return existingFlight.From.Equals(flight.From) && existingFlight.To.Equals(flight.To) && existingFlight.DepartureTime.Equals(flight.DepartureTime);
-            });
+                return _listOfFlights.Any(existingFlight =>
+                {
+                    return existingFlight.From.Equals(flight.From) && existingFlight.To.Equals(flight.To) && existingFlight.DepartureTime.Equals(flight.DepartureTime);
+                });
+            }
         }
 
         public Flight GetFlight(int flightId)
         {
-            return _listOfFlights.FirstOrDefault(flight => flight.Id == flightId);
+            lock (_balanceLock)
+            {
+                return _listOfFlights.FirstOrDefault(flight => flight.Id == flightId);
+            }
         }
 
         public void DeleteFlight(int flightId)
         {
-            var flight = GetFlight(flightId);
-
-            _listOfFlights.Remove(flight);
+            lock (_balanceLock)
+            {
+                var flight = GetFlight(flightId);
+                _listOfFlights.Remove(flight);
+            }
         }
 
         public List<Airport> SearchAirports(string keyword)
         {
-            var listOfAirports = _listOfFlights.Aggregate(new List<Airport>(), (currentList, flight) => {
+            lock (_balanceLock)
+            {
+                var listOfAirports = _listOfFlights.Aggregate(new List<Airport>(), (currentList, flight) => {
 
-                if (AirportMatchesSearchKeyword(flight.From, keyword) && !currentList.Any(airport => airport.Equals(flight.From))) currentList.Add(flight.From);
+                    if (AirportMatchesSearchKeyword(flight.From, keyword) && !currentList.Any(airport => airport.Equals(flight.From))) currentList.Add(flight.From);
 
-                if (AirportMatchesSearchKeyword(flight.To, keyword) && !currentList.Any(airport => airport.Equals(flight.To))) currentList.Add(flight.To);
+                    if (AirportMatchesSearchKeyword(flight.To, keyword) && !currentList.Any(airport => airport.Equals(flight.To))) currentList.Add(flight.To);
 
-                return currentList;
-            });
+                    return currentList;
+                });
 
-            return listOfAirports;
+                return listOfAirports;
+            }
         }
 
         public FlightPage GetFlights(FlightTicket ticket)
         {
-            DateTime ticketDepartureTime;
-            DateTime.TryParse(ticket.DepartureDate ,out ticketDepartureTime);
-
-            var filteredFlights = _listOfFlights.Where(flight =>
+            lock (_balanceLock)
             {
-                var flightDateTime = DateTime.Parse(flight.DepartureTime);
+                DateTime ticketDepartureTime;
+                DateTime.TryParse(ticket.DepartureDate, out ticketDepartureTime);
 
-                var departureDatesMatch =
-                    ticketDepartureTime.Day == flightDateTime.Day &&
-                    ticketDepartureTime.Month == flightDateTime.Month &&
-                    ticketDepartureTime.Year == flightDateTime.Year;
+                var filteredFlights = _listOfFlights.Where(flight =>
+                {
+                    var flightDateTime = DateTime.Parse(flight.DepartureTime);
 
-                return flight.From.Code.Equals(ticket.From) && flight.To.Code.Equals(ticket.To) && departureDatesMatch;
-            }).ToList();
+                    var departureDatesMatch =
+                        ticketDepartureTime.Day == flightDateTime.Day &&
+                        ticketDepartureTime.Month == flightDateTime.Month &&
+                        ticketDepartureTime.Year == flightDateTime.Year;
 
-            var flightPagination = new FlightPagination(filteredFlights);
+                    return flight.From.Code.Equals(ticket.From) && flight.To.Code.Equals(ticket.To) && departureDatesMatch;
+                }).ToList();
 
-            return flightPagination.GetPage();
+                var flightPagination = new FlightPagination(filteredFlights);
+
+                return flightPagination.GetPage();
+            }
         }
 
         private bool AirportMatchesSearchKeyword(Airport airport, string keyword)
