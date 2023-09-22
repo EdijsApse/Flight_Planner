@@ -52,6 +52,18 @@ namespace Flight_Planner
             return listOfAirports;
         }
 
+        public FlightPage GetFlights(FlightTicket ticket)
+        {
+            var filteredFlights = _listOfFlights.Where(flight =>
+            {
+                return flight.From.Code.Equals(ticket.From) && flight.To.Code.Equals(ticket.To) && flight.DepartureTime.Equals(ticket.DepartureDate);
+            }).ToList();
+
+            var flightPagination = new FlightPagination(filteredFlights);
+
+            return flightPagination.GetPage();
+        }
+
         private bool AirportMatchesSearchKeyword(Airport airport, string keyword)
         {
             var santizedkeyword = keyword.ToLower().Trim();
