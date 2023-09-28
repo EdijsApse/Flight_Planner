@@ -1,20 +1,24 @@
 ﻿using Flight_Planner.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flight_Planner
 {
     public class FlightStorage
     {
-        private static List<Flight> _listOfFlights = new List<Flight>();
-
-        private static int _flightId = 0;
+        private readonly FlightPlannerDBContext _context;
 
         private static readonly object _balanceLock = new object();
+
+        public FlightStorage(FlightPlannerDBContext context)
+        {
+            _context = context;
+        }
 
         public void AddFlight(Flight flight)
         {
             lock(_balanceLock) {
-                flight.Id = _flightId++;
-                _listOfFlights.Add(flight);
+                _context.Flight.Add(flight);
+                _context.SaveChanges();
             }
         }
 
@@ -22,7 +26,9 @@ namespace Flight_Planner
         {
             lock (_balanceLock)
             {
-                _listOfFlights.Clear();
+                _context.Flight.RemoveRange(_context.Flight);
+                _context.Airport.RemoveRange(_context.Airport);
+                _context.SaveChanges();
             }
         }
 
@@ -30,10 +36,15 @@ namespace Flight_Planner
         {
             lock (_balanceLock)
             {
-                return _listOfFlights.Any(existingFlight =>
-                {
-                    return existingFlight.From.Equals(flight.From) && existingFlight.To.Equals(flight.To) && existingFlight.DepartureTime.Equals(flight.DepartureTime);
-                });
+                return _context.Flight
+                    .Include(f => f.From)
+                    .Include(f => f.To)
+                    .Any(f =>
+                        f.DepartureTime == flight.DepartureTime &&
+                        f.ArrivalTime == flight.ArrivalTime &&
+                        f.From.Code == flight.From.Code &&
+                        f.To.Code == flight.To.Code
+                    );
             }
         }
 
@@ -41,7 +52,10 @@ namespace Flight_Planner
         {
             lock (_balanceLock)
             {
-                return _listOfFlights.FirstOrDefault(flight => flight.Id == flightId);
+                return _context.Flight
+                    .Include(flight => flight.From)
+                    .Include(flight => flight.To)
+                    .FirstOrDefault(flight => flight.Id == flightId);
             }
         }
 
@@ -50,7 +64,11 @@ namespace Flight_Planner
             lock (_balanceLock)
             {
                 var flight = GetFlight(flightId);
-                _listOfFlights.Remove(flight);
+                if (flight != null)
+                {
+                    _context.Flight.Remove(flight);
+                    _context.SaveChanges();
+                }
             }
         }
 
@@ -58,16 +76,14 @@ namespace Flight_Planner
         {
             lock (_balanceLock)
             {
-                var listOfAirports = _listOfFlights.Aggregate(new List<Airport>(), (currentList, flight) => {
+                var sanitizedKeyword = keyword.ToLower().Trim();
 
-                    if (AirportMatchesSearchKeyword(flight.From, keyword) && !currentList.Any(airport => airport.Equals(flight.From))) currentList.Add(flight.From);
-
-                    if (AirportMatchesSearchKeyword(flight.To, keyword) && !currentList.Any(airport => airport.Equals(flight.To))) currentList.Add(flight.To);
-
-                    return currentList;
-                });
-
-                return listOfAirports;
+                return _context.Airport
+                    .Where(airport => 
+                        airport.Country.ToLower().Contains(sanitizedKeyword) ||
+                        airport.City.ToLower().Contains(sanitizedKeyword) ||
+                        airport.Code.ToLower().Contains(sanitizedKeyword)
+                    ).ToList();
             }
         }
 
@@ -75,32 +91,19 @@ namespace Flight_Planner
         {
             lock (_balanceLock)
             {
-                DateTime ticketDepartureTime;
-                DateTime.TryParse(ticket.DepartureDate, out ticketDepartureTime);
-
-                var filteredFlights = _listOfFlights.Where(flight =>
-                {
-                    var flightDateTime = DateTime.Parse(flight.DepartureTime);
-
-                    var departureDatesMatch =
-                        ticketDepartureTime.Day == flightDateTime.Day &&
-                        ticketDepartureTime.Month == flightDateTime.Month &&
-                        ticketDepartureTime.Year == flightDateTime.Year;
-
-                    return flight.From.Code.Equals(ticket.From) && flight.To.Code.Equals(ticket.To) && departureDatesMatch;
-                }).ToList();
+                var filteredFlights = _context.Flight
+                    .Include(flight => flight.From)
+                    .Include(flight => flight.To)
+                    .Where(flight =>
+                        flight.From.Code.Equals(ticket.From) &&
+                        flight.To.Code.Equals(ticket.To) &&
+                        flight.DepartureTime.Contains(ticket.DepartureDate)
+                        ).ToList();
 
                 var flightPagination = new FlightPagination(filteredFlights);
 
                 return flightPagination.GetPage();
             }
-        }
-
-        private bool AirportMatchesSearchKeyword(Airport airport, string keyword)
-        {
-            var santizedkeyword = keyword.ToLower().Trim();
-
-            return airport.Code.ToLower().Contains(santizedkeyword) || airport.Country.ToLower().Contains(santizedkeyword) || airport.City.ToLower().Contains(santizedkeyword);
         }
     }
 }

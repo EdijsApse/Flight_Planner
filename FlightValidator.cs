@@ -42,21 +42,7 @@ namespace Flight_Planner
 
         private void ValidateUniqueAirports()
         {
-            var airportFrom = new Airport
-            {
-                Country = _flight.From.Country.ToLower().Trim(),
-                City = _flight.From.City.ToLower().Trim(),
-                Code = _flight.From.Code.ToLower().Trim(),
-            };
-
-            var airportTo = new Airport
-            {
-                Country = _flight.To.Country.ToLower().Trim(),
-                City = _flight.To.City.ToLower().Trim(),
-                Code = _flight.To.Code.ToLower().Trim(),
-            };
-
-            if (airportTo.Equals(airportFrom)) Errors.Add("Airport From and Airport To are the same!");
+            if (_flight.From.Code.ToLower().Trim() == _flight.To.Code.ToLower().Trim()) Errors.Add("Airport From and Airport To are the same!");
         }
 
         private void ValidateCarrier()

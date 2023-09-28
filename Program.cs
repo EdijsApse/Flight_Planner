@@ -1,5 +1,6 @@
 using Flight_Planner.Handlers;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flight_Planner
 {
@@ -13,6 +14,11 @@ namespace Flight_Planner
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+            builder.Services.AddDbContext<FlightPlannerDBContext>(options => {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("FlightPlanner"));
+            });
+            builder.Services.AddTransient<FlightStorage>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddAuthentication("BasicAuthentication")

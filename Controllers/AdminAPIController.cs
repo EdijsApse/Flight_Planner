@@ -11,9 +11,9 @@ namespace Flight_Planner.Controllers
     {
         private FlightStorage _flightStorage;
 
-        public AdminAPIController()
+        public AdminAPIController(FlightStorage storage)
         {
-            _flightStorage = new FlightStorage();
+            _flightStorage = storage;
         }
 
         [HttpGet]

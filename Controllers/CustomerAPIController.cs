@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Flight_Planner.Controllers
 {
@@ -9,9 +8,9 @@ namespace Flight_Planner.Controllers
     {
         private FlightStorage _flightStorage;
 
-        public CustomerAPIController()
+        public CustomerAPIController(FlightStorage storage)
         {
-            _flightStorage = new FlightStorage();
+            _flightStorage = storage;
         }
 
         [HttpGet]
