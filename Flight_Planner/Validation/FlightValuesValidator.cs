@@ -3,7 +3,7 @@ using Flight_Planner.Core.Models;
 
 namespace Flight_Planner.Validation
 {
-    public class FlightValuesValidator : IValidate
+    public class FlightValuesValidator : IFlightValidate
     {
         public bool IsValid(Flight flight)
         {

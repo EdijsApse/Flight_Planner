@@ -17,13 +17,13 @@ namespace Flight_Planner.Controllers
 
         private readonly IMapper _mapper;
 
-        private readonly IEnumerable<IValidate> _validators;
+        private readonly IEnumerable<IFlightValidate> _flightValidators;
 
-        public AdminAPIController(IFlightService flightService, IMapper mapper, IEnumerable<IValidate> validators)
+        public AdminAPIController(IFlightService flightService, IMapper mapper, IEnumerable<IFlightValidate> flightValidators)
         {
             _flightService = flightService;
             _mapper = mapper;
-            _validators = validators;
+            _flightValidators = flightValidators;
         }
 
         [HttpGet]
@@ -43,7 +43,7 @@ namespace Flight_Planner.Controllers
         {
             var flight = _mapper.Map<Flight>(request);
 
-            if (!_validators.All(validator => validator.IsValid(flight))) return BadRequest();
+            if (!_flightValidators.All(validator => validator.IsValid(flight))) return BadRequest();
 
             if (_flightService.Exists(flight)) return Conflict();
 

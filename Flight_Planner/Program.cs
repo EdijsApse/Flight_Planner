@@ -1,4 +1,3 @@
-using AutoMapper;
 using Flight_Planner.Core.Interfaces;
 using Flight_Planner.Core.Models;
 using Flight_Planner.Core.Services;
@@ -40,10 +39,10 @@ namespace Flight_Planner
 
             builder.Services.AddTransient<ICleanupService, CleanupService>();
 
-            builder.Services.AddTransient<IValidate, AirportValuesValidator>();
-            builder.Services.AddTransient<IValidate, FlightDateValidator>();
-            builder.Services.AddTransient<IValidate, FlightValuesValidator>();
-            builder.Services.AddTransient<IValidate, SameAirportValidator>();
+            builder.Services.AddTransient<IFlightValidate, AirportValuesValidator>();
+            builder.Services.AddTransient<IFlightValidate, FlightDateValidator>();
+            builder.Services.AddTransient<IFlightValidate, FlightValuesValidator>();
+            builder.Services.AddTransient<IFlightValidate, SameAirportValidator>();
 
             builder.Services.AddTransient<ITicketValidate, TicketAirportsValidator>();
             builder.Services.AddTransient<ITicketValidate, TicketValuesValidator>();
