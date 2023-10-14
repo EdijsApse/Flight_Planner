@@ -1,4 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Flight_Planner.Core.Interfaces;
+using Flight_Planner.Core.Models;
+using Flight_Planner.Core.Services;
+using Flight_Planner.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Flight_Planner.Controllers
 {
@@ -6,38 +11,54 @@ namespace Flight_Planner.Controllers
     [ApiController]
     public class CustomerAPIController : ControllerBase
     {
-        private FlightStorage _flightStorage;
 
-        public CustomerAPIController(FlightStorage storage)
+        private readonly IFlightService _flightService;
+
+        private readonly IAirportService _airportService;
+
+        private readonly IMapper _mapper;
+
+        private readonly IEnumerable<ITicketValidate> _validators;
+
+        public CustomerAPIController(IAirportService airportService, IMapper mapper, IFlightService flightService, IEnumerable<ITicketValidate> validators)
         {
-            _flightStorage = storage;
+            _airportService = airportService;
+            _flightService = flightService;
+            _mapper = mapper;
+            _validators = validators;
         }
 
         [HttpGet]
         [Route("airports")]
         public IActionResult GetAirports(string search)
         {
-            return Ok(_flightStorage.SearchAirports(search));
+            var listOfMappedAirports = _airportService
+                .SearchAirports(search)
+                .Select(airport => _mapper.Map<AirportRequest>(airport));
+
+            return Ok(listOfMappedAirports);
         }
 
         [HttpPost]
         [Route("flights/search")]
         public IActionResult SearchFlights(FlightTicket ticket)
         {
-            var ticketValidator = new TicketValidator(ticket);
+            if (!_validators.All(validator => validator.IsValid(ticket))) return BadRequest();
 
-            if (ticketValidator.HasErrors()) return BadRequest();
+            var filteredFlights = _flightService.SearchFullFlights(ticket);
 
-            return Ok(_flightStorage.GetFlights(ticket));
+            var flightPagination = new FlightPagination(filteredFlights);
+
+            return Ok(flightPagination.GetPage());
         }
 
         [HttpGet]
         [Route("flights/{id}")]
         public IActionResult GetSingleFlight(int id)
         {
-            var flight = _flightStorage.GetFlight(id);
+            var flight = _flightService.GetFullFlightById(id);
 
-            if (flight != null) return Ok(flight);
+            if (flight != null) return Ok(_mapper.Map<FlightRequest>(flight));
 
             return NotFound();
         }

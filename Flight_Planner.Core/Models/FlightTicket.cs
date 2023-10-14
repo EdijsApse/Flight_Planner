@@ -1,4 +1,4 @@
-﻿namespace Flight_Planner
+﻿namespace Flight_Planner.Core.Models
 {
     public class FlightTicket
     {

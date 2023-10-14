@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Flight_Planner.Migrations
+namespace Flight_Planner.Data.Migrations
 {
     public partial class Init : Migration
     {
@@ -14,9 +14,9 @@ namespace Flight_Planner.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
+                    Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,9 +31,9 @@ namespace Flight_Planner.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FromId = table.Column<int>(type: "int", nullable: false),
                     ToId = table.Column<int>(type: "int", nullable: false),
-                    Carrier = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    DepartureTime = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    ArrivalTime = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    Carrier = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DepartureTime = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ArrivalTime = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -1,4 +1,4 @@
-﻿using Flight_Planner.Models;
+﻿using Flight_Planner.Core.Models;
 
 namespace Flight_Planner
 {

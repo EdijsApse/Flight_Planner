@@ -1,10 +1,11 @@
-﻿using Flight_Planner.Models;
+﻿using Flight_Planner.Core.Models;
 
 namespace Flight_Planner
 {
     public class FlightPage
     {
         private List<Flight> _listOfFlights;
+
         public int Page { get; set; }
 
         public int TotalItems { get; set; }

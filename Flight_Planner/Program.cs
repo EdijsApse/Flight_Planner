@@ -1,4 +1,11 @@
+using AutoMapper;
+using Flight_Planner.Core.Interfaces;
+using Flight_Planner.Core.Models;
+using Flight_Planner.Core.Services;
+using Flight_Planner.Data;
 using Flight_Planner.Handlers;
+using Flight_Planner.Services;
+using Flight_Planner.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +17,8 @@ namespace Flight_Planner
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var mapper = AutoMapperConfig.CreateMapper();
+
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -18,7 +27,29 @@ namespace Flight_Planner
             builder.Services.AddDbContext<FlightPlannerDBContext>(options => {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("FlightPlanner"));
             });
-            builder.Services.AddTransient<FlightStorage>();
+
+            builder.Services.AddTransient<IFlightPlannerDBContext, FlightPlannerDBContext>();
+
+            builder.Services.AddTransient<IDbService, DbService>();
+
+            builder.Services.AddTransient<IEntityService<Airport>, EntityService<Airport>>();
+            builder.Services.AddTransient<IEntityService<Flight>, EntityService<Flight>>();
+
+            builder.Services.AddTransient<IFlightService, FlightService>();
+            builder.Services.AddTransient<IAirportService, AirportService>();
+
+            builder.Services.AddTransient<ICleanupService, CleanupService>();
+
+            builder.Services.AddTransient<IValidate, AirportValuesValidator>();
+            builder.Services.AddTransient<IValidate, FlightDateValidator>();
+            builder.Services.AddTransient<IValidate, FlightValuesValidator>();
+            builder.Services.AddTransient<IValidate, SameAirportValidator>();
+
+            builder.Services.AddTransient<ITicketValidate, TicketAirportsValidator>();
+            builder.Services.AddTransient<ITicketValidate, TicketValuesValidator>();
+
+            builder.Services.AddSingleton(mapper);
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddAuthentication("BasicAuthentication")
