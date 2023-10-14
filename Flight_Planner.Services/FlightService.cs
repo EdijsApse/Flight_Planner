@@ -9,6 +9,8 @@ namespace Flight_Planner.Services
     {
         private static readonly object _lock = new object();
 
+        private static int _itemsPerPage = 10;
+
         public FlightService(IFlightPlannerDBContext context) : base(context)
         {
         }
@@ -35,16 +37,35 @@ namespace Flight_Planner.Services
             .FirstOrDefault(f => f.Id == id);
         }
 
-        public List<Flight> SearchFullFlights(FlightTicket ticket)
+        public IQueryable<Flight> Filter(FlightTicket ticket)
         {
             return _context.Flight
-                    .Include(flight => flight.From)
-                    .Include(flight => flight.To)
-                    .Where(flight =>
-                        flight.From.Code.Equals(ticket.From) &&
-                        flight.To.Code.Equals(ticket.To) &&
-                        flight.DepartureTime.Contains(ticket.DepartureDate)
-                        ).ToList();
+                        .Include(flight => flight.From)
+                        .Include(flight => flight.To)
+            .Where(flight =>
+                flight.From.Code.Equals(ticket.From) &&
+                flight.To.Code.Equals(ticket.To) &&
+                flight.DepartureTime.Contains(ticket.DepartureDate)
+            );
+        }
+
+        public FlightPage GetPage(FlightTicket ticket, int page)
+        {
+            var query = _context.Flight
+            .Include(flight => flight.From)
+            .Include(flight => flight.To)
+            .Where(flight =>
+                flight.From.Code.Equals(ticket.From) &&
+                flight.To.Code.Equals(ticket.To) &&
+                flight.DepartureTime.Contains(ticket.DepartureDate)
+            );
+
+            var skipItems = page * _itemsPerPage;
+
+            var totalItems = query.Count();
+            var items = query.Skip(skipItems).Take(_itemsPerPage).ToList();
+
+            return new FlightPage(page, totalItems, items);
         }
 
         public new void Create(Flight flight)

@@ -8,6 +8,6 @@ namespace Flight_Planner.Core.Services
 
         bool Exists(Flight flight);
 
-        List<Flight> SearchFullFlights(FlightTicket ticket);
+        FlightPage GetPage(FlightTicket ticket, int page);
     }
 }

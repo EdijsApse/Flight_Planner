@@ -45,11 +45,9 @@ namespace Flight_Planner.Controllers
         {
             if (!_validators.All(validator => validator.IsValid(ticket))) return BadRequest();
 
-            var filteredFlights = _flightService.SearchFullFlights(ticket);
+            var filteredFlights = _flightService.GetPage(ticket, 0);
 
-            var flightPagination = new FlightPagination(filteredFlights);
-
-            return Ok(flightPagination.GetPage());
+            return Ok(filteredFlights);
         }
 
         [HttpGet]
