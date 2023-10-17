@@ -12,3 +12,6 @@
 
 /**/.vs/*
 /**/packages/*
+
+bin/*
+obj/*
