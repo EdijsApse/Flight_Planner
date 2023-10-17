@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Flight_Planner.Models
 {
-    public class Airport
+    public class AirportRequest
     {
         [JsonIgnore]
         public int Id { get; set; }
@@ -16,6 +16,6 @@ namespace Flight_Planner.Models
 
         [StringLength(10)]
         [JsonPropertyName("airport")]
-        public string Code { get; set; }
+        public string Airport { get; set; }
     }
 }
