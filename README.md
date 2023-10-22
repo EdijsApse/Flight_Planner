@@ -18,5 +18,5 @@ Make sure you have installed all of the following prerequisites on your developm
 
 Follow the instructions to setup this project locally
 
-1. Clone Weather App repository.
+1. Clone Flight Planner repository.
 2. Build & Run from Visual Studio editor
